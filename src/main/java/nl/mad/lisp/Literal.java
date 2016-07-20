@@ -6,4 +6,8 @@ public class Literal {
 	public Literal(String value) {
 		this.value = value;
 	}
+	
+	public String toString() {
+		return "\\" + value;
+	}
 }

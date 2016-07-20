@@ -13,4 +13,13 @@ public class LispMainTest {
 			"(hello \"world\")"
 		});
 	}
+
+	@Test
+	public void shouldDoSomethingToo() throws IOException {
+		LispMain.main( new String[] {
+			"(define greeting \"hello, \")" +
+			"(define hello (who) (print greeting who \"!\"))\n" +
+			"(hello \"world\")"
+		});
+	}
 }

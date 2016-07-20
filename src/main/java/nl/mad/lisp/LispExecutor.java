@@ -23,17 +23,21 @@ public class LispExecutor {
 		}
 	}
 
-	// (define fnark (arg1 arg2) ( ... ) )
+	// (define fnark (arg1 arg2) ( ... ) ) of (define fnark "hoi")
 	private void define(Node line, Namespace namespace) {
-
 		Node current = line.next;
 		String name = ((Literal) current.value).value;
 		current = current.next;
-		Node args = (Node) current.value;
-		current = current.next;
-		Node code = current;
+		Object value = current.value;
 
-		namespace.add(new Name(name, args, code));
+		Node args = null;
+		if (current.next != null) {
+			args = (Node) current.value;
+			current = current.next;
+			value = current;
+		}
+
+		namespace.add(new Name(name, args, value));
 	}
 
 	// ( print "a" "b" "c" )
