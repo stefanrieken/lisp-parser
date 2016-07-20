@@ -2,14 +2,12 @@ package nl.mad.lisp.readers;
 
 import java.io.PushbackReader;
 
-import nl.mad.lisp.Token;
-
 public class StringReader extends Reader {
 	
 	private boolean escape = false;
 
 	@Override
-	public Token read(PushbackReader input) {
+	public String read(PushbackReader input) {
 		StringBuffer result = new StringBuffer();
 
 		int read = readChar(input);
@@ -34,7 +32,7 @@ public class StringReader extends Reader {
 		
 		if (escape) throw new RuntimeException("Parse error: escape char");
 
-		return new Token(Token.Type.STRING, result.toString());
+		return result.toString();
 	}
 
 }

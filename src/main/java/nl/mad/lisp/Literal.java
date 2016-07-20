@@ -1,0 +1,9 @@
+package nl.mad.lisp;
+
+public class Literal {
+	String value;
+
+	public Literal(String value) {
+		this.value = value;
+	}
+}

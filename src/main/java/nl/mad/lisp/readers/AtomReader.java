@@ -2,7 +2,7 @@ package nl.mad.lisp.readers;
 
 import java.io.PushbackReader;
 
-import nl.mad.lisp.Token;
+import nl.mad.lisp.Literal;
 
 /**
  * Parse any Atom that is not a String (which is parsed separately due to having to support escaping).
@@ -19,7 +19,7 @@ import nl.mad.lisp.Token;
 public class AtomReader extends Reader {
 
 	@Override
-	public Token read(PushbackReader input) {
+	public Object read(PushbackReader input) {
 		StringBuffer result = new StringBuffer();
 
 		int read = readChar(input);
@@ -41,15 +41,15 @@ public class AtomReader extends Reader {
 		return makeToken(result.toString());
 	}
 
-	private Token makeToken(String data) {
+	private Object makeToken(String data) {
 		// There are still no good (no-exception-throwing) methods to check for type conversion in Java. 
 		try {
-			return new Token(Token.Type.INTEGER, Integer.parseInt(data));
+			return Integer.parseInt(data);
 		} catch (NumberFormatException e) {
 			try {
-				return new Token(Token.Type.FLOAT, Float.parseFloat(data));
+				return Float.parseFloat(data);
 			} catch (NumberFormatException f) {
-				return new Token(Token.Type.LITERAL, data);
+				return new Literal(data);
 			}
 		}
 	}

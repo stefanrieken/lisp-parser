@@ -30,8 +30,6 @@ public class LispParser {
 		Node current = null;
 		Node node = null;
 
-		List<Token> tokens = new ArrayList<>();
-
 		int read = readChar(input);
 
 		while (read != -1) {
@@ -39,16 +37,14 @@ public class LispParser {
 
 			switch (ch) {
 				case '"':
-					node = new Node(string.read(input).data);
+					node = new Node(string.read(input));
 					break;
 				case '(':
-					System.err.print("(");
 					parens++;
-					node = parse(input);
+					node = new Node(parse(input));
 					break;
 				case ')':
 					if (parens == 0) throw new RuntimeException("Parse error: too many closing parentheses.");
-					System.err.print(")");
 					parens--;
 					return root;
 				case ';':
@@ -57,7 +53,7 @@ public class LispParser {
 				default:
 					if (!Character.isWhitespace(ch)) {
 						unreadChar(input, read);
-						node = new Node(atom.read(input).data);
+						node = new Node(atom.read(input));
 					}
 
 					break;
@@ -67,11 +63,13 @@ public class LispParser {
 			if (node != null) {
 				if (root == null) {
 					root = node;
+					current = root;
 				} else {
-					if (current == null) current = root;
 					current.next = node;
 					current = node;
 				}
+				
+				node = null;
 			}
 
 			read = readChar(input);
