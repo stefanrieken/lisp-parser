@@ -18,6 +18,7 @@ public class LispMainTest {
 	public void shouldDoSomethingToo() throws IOException {
 		LispMain.main( new String[] {
 			"(define greeting \"hello, \")" +
+			"(define who \"who\")" +
 			"(define hello (who) (print greeting who \"!\"))\n" +
 			"(hello \"world\")"
 		});
