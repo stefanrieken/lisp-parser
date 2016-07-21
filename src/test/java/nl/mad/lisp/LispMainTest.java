@@ -1,16 +1,56 @@
 package nl.mad.lisp;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 import org.junit.Test;
 
 public class LispMainTest {
 
 	@Test
-	public void shouldDoSomething() throws IOException {
-		new LispMain().doit(getClass().getResourceAsStream("/hello.lisp"));
-		new LispMain().doit(getClass().getResourceAsStream("/hello_int.lisp"));
-		new LispMain().doit(getClass().getResourceAsStream("/hello_scope.lisp"));
-		new LispMain().doit(getClass().getResourceAsStream("/hello_closures.lisp"));
+	public void testHello() throws IOException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		LispMain.run(in("/hello.lisp"), out(stream));
+		assertValue("Hello, world!\n", stream);
+	}
+
+	@Test
+	public void testHelloInt() throws IOException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		LispMain.run(in("/hello_int.lisp"), out(stream));
+		assertValue("Hello, 2 you too!\n", stream);
+	}
+
+	@Test
+	public void testHelloScope() throws IOException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		LispMain.run(in("/hello_scope.lisp"), out(stream));
+		assertValue("Hello, world!\nGoodbye, cruel world!\n", stream);
+	}
+
+	@Test
+	public void testHelloClosures() throws IOException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		LispMain.run(in("/hello_closures.lisp"), out(stream));
+		assertValue("Hello, who?!\nHello, me!\n", stream);
+	}
+	
+	private InputStream in(String file) {
+		return getClass().getResourceAsStream(file);
+	}
+	
+	private PrintStream out(OutputStream stream) {
+		return new PrintStream(stream);
+	}
+	
+	private void assertValue(String value, ByteArrayOutputStream stream) {
+		String val = new String(stream.toByteArray());
+		System.out.println(value);
+		assertEquals(value, val);
 	}
 }

@@ -1,6 +1,14 @@
 package nl.mad.lisp;
 
+import java.io.PrintStream;
+
 public class LispExecutor {
+	private PrintStream out;
+	
+	public LispExecutor(PrintStream out) {
+		this.out = out;
+	}
+
 	public Data eval (Node node, Namespace namespace) {
 		Data result;
 
@@ -89,7 +97,7 @@ public class LispExecutor {
 		Node current = line.next;
 
 		while (current != null) {
-			System.out.println(eval(current, namespace).value);
+			out.println(eval(current, namespace).value);
 			current = current.next;
 		}
 	}
