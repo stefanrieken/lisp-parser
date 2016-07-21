@@ -41,7 +41,7 @@ public class LispParser {
 					break;
 				case '(':
 					parens++;
-					node = new Node(parse(input));
+					node = new Node(new Data(Data.Type.LIST, parse(input)));
 					break;
 				case ')':
 					if (parens == 0) throw new RuntimeException("Parse error: too many closing parentheses.");

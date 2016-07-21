@@ -9,8 +9,9 @@ public class Namespace {
 		this.parent = parent;
 	}
 
-	public void add (Name name) {
-		Node node = new Node(name);
+	public void add(Name name) {
+		name.namespace = this;
+		Node node = new Node(new Data(Data.Type.NULL, name)); // slightly mis-using nodes here? Discuss.
 
 		if (last == null)
 			names = node;
@@ -24,7 +25,7 @@ public class Namespace {
 		Node current = names;
 
 		while (current != null) {
-			Name n = (Name) current.value;
+			Name n = (Name) current.getValue();
 			if (name.equals(n.name)) return n;
 			current = current.next;
 		}

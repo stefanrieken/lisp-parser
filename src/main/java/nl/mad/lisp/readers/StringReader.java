@@ -2,12 +2,14 @@ package nl.mad.lisp.readers;
 
 import java.io.PushbackReader;
 
+import nl.mad.lisp.Data;
+
 public class StringReader extends Reader {
 	
 	private boolean escape = false;
 
 	@Override
-	public String read(PushbackReader input) {
+	public Data read(PushbackReader input) {
 		StringBuffer result = new StringBuffer();
 
 		int read = readChar(input);
@@ -32,7 +34,7 @@ public class StringReader extends Reader {
 		
 		if (escape) throw new RuntimeException("Parse error: escape char");
 
-		return result.toString();
+		return new Data(Data.Type.STRING, result.toString());
 	}
 
 }

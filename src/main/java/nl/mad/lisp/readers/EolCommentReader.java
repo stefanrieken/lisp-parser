@@ -2,10 +2,12 @@ package nl.mad.lisp.readers;
 
 import java.io.PushbackReader;
 
+import nl.mad.lisp.Data;
+
 public class EolCommentReader extends Reader {
 
 	@Override
-	public String read(PushbackReader input) {
+	public Data read(PushbackReader input) {
 		StringBuffer result = new StringBuffer();
 
 		int read = readChar(input);
@@ -18,6 +20,6 @@ public class EolCommentReader extends Reader {
 			read = readChar(input);
 		}
 
-		return result.toString();
+		return null; // result.toString();
 	}
 }

@@ -3,6 +3,8 @@ package nl.mad.lisp.readers;
 import java.io.IOException;
 import java.io.PushbackReader;
 
+import nl.mad.lisp.Data;
+
 /**
  * Read (parse) different aspects of the (LISP) language.
  * 
@@ -11,7 +13,7 @@ import java.io.PushbackReader;
  * be pushed back on input. 
  */
 public abstract class Reader {
-	public abstract Object read(PushbackReader input);
+	public abstract Data read(PushbackReader input);
 	
 	protected int readChar(PushbackReader input) {
 		try {

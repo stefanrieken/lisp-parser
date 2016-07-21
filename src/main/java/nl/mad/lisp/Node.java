@@ -1,22 +1,28 @@
 package nl.mad.lisp;
 
 public class Node {
-	public Object value;
+	public Data data;
 	public Node next;
 	
-	public Node (Object value) {
-		this.value = value;
+	public Node (Data data) {
+		if (data == null)
+			data = new Data(Data.Type.NULL, null);
+		this.data = data;
 	}
-	
+
+	public Object getValue() {
+		return data.value;
+	}
+
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("(");
-		buffer.append(value);
+		buffer.append(data.value);
 		
 		Node current = next;
 		while (current != null) {
 			buffer.append(" ");
-			buffer.append(current.value);
+			buffer.append(current.getValue());
 			current = current.next;
 		}
 		

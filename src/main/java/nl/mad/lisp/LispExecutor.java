@@ -4,40 +4,80 @@ public class LispExecutor {
 
 	public void execute (Node root) {
 		Namespace global = new Namespace(null);
-		execute(root, global);
+		eval(root, global);
 	}
 
-	public void execute (Node node, Namespace namespace) {
+	private Node eval (Node node, Namespace namespace) {
+		Node result;
+
+		switch (node.data.type) {
+			case LITERAL:
+				Name name = namespace.lookup((String) node.getValue());
+				if (name == null)
+					throw new RuntimeException("Name not defined in scope: " + node.getValue());
+				result = eval((Node) name.value, name.value.data.type == Data.Type.LIST ? new Namespace(name.namespace) : namespace);
+				break;
+			case LIST:
+				evalList(node, new Namespace(namespace));
+				return null; // TODO no mechanism yet for function results
+			default:
+				result = node;
+				break;
+		}
+		
+		return result;
+	}
+
+	private void evalList (Node node, Namespace namespace) {
 		while (node != null) {
-			Node line = (Node) node.value;
-			String command = ((Literal) line.value).value;
+			Node line = (Node) node.getValue();
 			
-			if ("define".equals(command))
-				define(line, namespace);
-			else if ("print".equals(command))
-				print(line, namespace);
-			else
-				call(line, namespace);
-			
+			switch(line.data.type) {
+				case LITERAL:
+					executeLine(line, namespace);
+					break;
+				case LIST:
+					evalList(line, new Namespace(namespace));
+					break;
+			}
+
 			node = node.next;
 		}
+	}
+	
+	private void executeLine(Node line, Namespace namespace) {
+		String command = (String) line.getValue();
+		
+		if ("define".equals(command))
+			define(line, namespace);
+		else if ("print".equals(command))
+			print(line, namespace);
+		else
+			call(line, namespace);
 	}
 
 	// (define fnark (arg1 arg2) ( ... ) ) of (define fnark "hoi")
 	private void define(Node line, Namespace namespace) {
 		Node current = line.next;
-		String name = ((Literal) current.value).value;
+		String name = (String) current.getValue();
 		current = current.next;
-		Object value = current.value;
+		Node value = current;
 
 		Node args = null;
 		if (current.next != null) {
-			args = (Node) current.value;
+			args = (Node) current.getValue();
 			current = current.next;
 			value = current;
 		}
 
-		namespace.add(new Name(name, args, value));
+		Name n = namespace.lookup(name);
+		if (n == null) {
+			namespace.add(new Name(name, args, value));
+		} else {
+			// override; this is where you should GC!
+			n.args = args;
+			n.value = value;
+		}
 	}
 
 	// ( print "a" "b" "c" )
@@ -46,19 +86,17 @@ public class LispExecutor {
 		Node current = line.next;
 
 		while (current != null) {
-			if (current.value instanceof Literal)
-				System.out.print(namespace.lookup(((Literal) current.value).value).value);
-			else
-				System.out.print(current.value);
+			System.out.print(eval(current, namespace).getValue());
 			current = current.next;
 		}
 
 		System.out.println();
 	}
 
+
 	// ( methodname arg1 arg2 ) => (method (arg1 arg2) ( ... ) )
 	private void call(Node line, Namespace namespace) {
-		Name name = namespace.lookup(((Literal) line.value).value);
+		Name name = namespace.lookup((String)line.getValue());
 
 		Namespace subspace = new Namespace(namespace);
 
@@ -67,11 +105,11 @@ public class LispExecutor {
 		Node arg = name.args;
 
 		while (param != null) {
-			subspace.add(new Name(((Literal) arg.value).value, null, param.value));
+			subspace.add(new Name((String) arg.getValue(), null, param));
 			arg = arg.next;
 			param = param.next;
 		}
 
-		execute((Node) name.value, subspace);
+		evalList((Node) name.value, subspace);
 	}
 }

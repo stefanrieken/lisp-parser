@@ -8,19 +8,8 @@ public class LispMainTest {
 
 	@Test
 	public void shouldDoSomething() throws IOException {
-		LispMain.main( new String[] {
-			"(define hello (who) (print \"hello, \" who \"!\"))\n" +
-			"(hello \"world\")"
-		});
-	}
-
-	@Test
-	public void shouldDoSomethingToo() throws IOException {
-		LispMain.main( new String[] {
-			"(define greeting \"hello, \")" +
-			"(define who \"who\")" +
-			"(define hello (who) (print greeting who \"!\"))\n" +
-			"(hello \"world\")"
-		});
+		new LispMain().doit(getClass().getResourceAsStream("/hello.lisp"));
+		new LispMain().doit(getClass().getResourceAsStream("/hello_scope.lisp"));
+		new LispMain().doit(getClass().getResourceAsStream("/hello_closures.lisp"));
 	}
 }

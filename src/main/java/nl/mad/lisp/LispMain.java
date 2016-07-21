@@ -8,8 +8,7 @@ import java.io.PushbackReader;
 
 public class LispMain {
 	
-	public static void main(String ... args) throws IOException {
-
+	public static void main(String ... args) {
 		InputStream inputStream;
 
 		if (args.length == 0) {
@@ -19,12 +18,20 @@ public class LispMain {
 			inputStream = new ByteArrayInputStream(args[0].getBytes());
 		}
 
+		doit(inputStream);
+	}
+	
+	public static void doit(InputStream inputStream) {
 		PushbackReader reader = new PushbackReader(new InputStreamReader(inputStream));
 
 		//List<Token> tokens = new LispTokenizer().tokenize(reader);
 		Node root = new LispParser().parse(reader);
 		new LispExecutor().execute(root);
 
-		reader.close();
+		try {
+			reader.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
