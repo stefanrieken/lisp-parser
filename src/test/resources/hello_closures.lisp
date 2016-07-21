@@ -1,4 +1,5 @@
 (define greeting "Hello, ")
+	(define resolvewho ("who?"))
 (define hello (who) (print greeting who "!"))
 ; asdf
 (
