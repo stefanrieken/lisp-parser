@@ -7,8 +7,8 @@ public class LispExecutor {
 		eval(root, global);
 	}
 
-	private Node eval (Node node, Namespace namespace) {
-		Node result;
+	private Data eval (Node node, Namespace namespace) {
+		Data result;
 
 		switch (node.data.type) {
 			case LITERAL:
@@ -18,42 +18,52 @@ public class LispExecutor {
 				result = eval((Node) name.value, name.value.data.type == Data.Type.LIST ? new Namespace(name.namespace) : namespace);
 				break;
 			case LIST:
-				evalList(node, new Namespace(namespace));
-				return null; // TODO no mechanism yet for function results
+				result = evalList(node, new Namespace(namespace));
+				break;
 			default:
-				result = node;
+				result = node.data;
 				break;
 		}
 		
 		return result;
 	}
 
-	private void evalList (Node node, Namespace namespace) {
+	private Data evalList (Node node, Namespace namespace) {
+		Data result = null;
+
 		while (node != null) {
 			Node line = (Node) node.getValue();
 			
 			switch(line.data.type) {
 				case LITERAL:
-					executeLine(line, namespace);
+					result = executeLine(line, namespace);
 					break;
 				case LIST:
-					evalList(line, new Namespace(namespace));
+					result = evalList(line, new Namespace(namespace));
+					break;
+				default:
+					result = line.data;
 					break;
 			}
 
 			node = node.next;
 		}
+		
+		return result;
 	}
 	
-	private void executeLine(Node line, Namespace namespace) {
+	private Data executeLine(Node line, Namespace namespace) {
+		Data result = null;
 		String command = (String) line.getValue();
-		
+
 		if ("define".equals(command))
 			define(line, namespace);
 		else if ("print".equals(command))
 			print(line, namespace);
 		else
-			call(line, namespace);
+			result = call(line, namespace);
+		
+		return result;
 	}
 
 	// (define fnark (arg1 arg2) ( ... ) ) of (define fnark "hoi")
@@ -86,7 +96,7 @@ public class LispExecutor {
 		Node current = line.next;
 
 		while (current != null) {
-			System.out.print(eval(current, namespace).getValue());
+			System.out.print(eval(current, namespace).value);
 			current = current.next;
 		}
 
@@ -95,7 +105,7 @@ public class LispExecutor {
 
 
 	// ( methodname arg1 arg2 ) => (method (arg1 arg2) ( ... ) )
-	private void call(Node line, Namespace namespace) {
+	private Data call(Node line, Namespace namespace) {
 		Name name = namespace.lookup((String)line.getValue());
 
 		Namespace subspace = new Namespace(namespace);
@@ -110,6 +120,6 @@ public class LispExecutor {
 			param = param.next;
 		}
 
-		evalList((Node) name.value, subspace);
+		return evalList((Node) name.value, subspace);
 	}
 }
