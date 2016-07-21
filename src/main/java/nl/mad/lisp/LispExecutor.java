@@ -2,9 +2,13 @@ package nl.mad.lisp;
 
 public class LispExecutor {
 
-	public void execute (Node root) {
+	public void execute (Node node) {
 		Namespace global = new Namespace(null);
-		eval(root, global);
+		
+		while (node != null) {
+			eval(node, global);
+			node = node.next;
+		}
 	}
 
 	private Data eval (Node node, Namespace namespace) {
@@ -18,7 +22,7 @@ public class LispExecutor {
 				result = eval((Node) name.value, name.value.data.type == Data.Type.LIST ? new Namespace(name.namespace) : namespace);
 				break;
 			case LIST:
-				result = evalList(node, new Namespace(namespace));
+				result = evalList((Node) node.getValue(), namespace);
 				break;
 			default:
 				result = node.data;
@@ -31,20 +35,13 @@ public class LispExecutor {
 	private Data evalList (Node node, Namespace namespace) {
 		Data result = null;
 
+		if (node.data.type == Data.Type.LITERAL)
+			return executeLine(node, namespace);
+
+		// we hebben te maken met scope haakjes
+		Namespace sub = new Namespace(namespace);
 		while (node != null) {
-			Node line = (Node) node.getValue();
-			
-			switch(line.data.type) {
-				case LITERAL:
-					result = executeLine(line, namespace);
-					break;
-				case LIST:
-					result = evalList(line, new Namespace(namespace));
-					break;
-				default:
-					result = line.data;
-					break;
-			}
+			result = eval(node, sub);
 
 			node = node.next;
 		}
@@ -58,14 +55,20 @@ public class LispExecutor {
 
 		if ("define".equals(command))
 			define(line, namespace);
-		else if ("print".equals(command))
-			print(line, namespace);
+		else if ("println".equals(command))
+			println(line, namespace);
+		else if ("+".equals(command))
+			result = add(line, namespace);
 		else
 			result = call(line, namespace);
 		
 		return result;
 	}
 
+	//
+	// all primitives from here
+	//
+	
 	// (define fnark (arg1 arg2) ( ... ) ) of (define fnark "hoi")
 	private void define(Node line, Namespace namespace) {
 		Node current = line.next;
@@ -91,26 +94,55 @@ public class LispExecutor {
 	}
 
 	// ( print "a" "b" "c" )
-	private void print(Node line, Namespace namespace) {
+	private void println(Node line, Namespace namespace) {
 
 		Node current = line.next;
 
 		while (current != null) {
-			System.out.print(eval(current, namespace).value);
+			System.out.println(eval(current, namespace).value);
+			current = current.next;
+		}
+	}
+
+	// implemented only for int (and String, through concat)
+	private Data add(Node line, Namespace namespace) {
+		int value = 0;
+
+		Node current = line.next;
+
+		while (current != null) {
+			Data data = eval(current, namespace);
+			if (data.type == Data.Type.STRING) return concat(line, namespace);
+
+			value += (Integer) data.value;
 			current = current.next;
 		}
 
-		System.out.println();
+		return new Data(Data.Type.INTEGER, value);
 	}
 
+	private Data concat(Node line, Namespace namespace) {
+		StringBuffer buffer = new StringBuffer();
+
+		Node current = line.next;
+
+		while (current != null) {
+			buffer.append(eval(current, namespace).value);
+			current = current.next;
+		}
+	
+		return new Data(Data.Type.STRING, buffer.toString());
+	}
 
 	// ( methodname arg1 arg2 ) => (method (arg1 arg2) ( ... ) )
 	private Data call(Node line, Namespace namespace) {
 		Name name = namespace.lookup((String)line.getValue());
+		
+		if (name == null) throw new RuntimeException("Name not defined in scope: " + line.getValue());
 
 		Namespace subspace = new Namespace(namespace);
 
-		Node param = line.next;
+		Node param = (Node) line.next;
 
 		Node arg = name.args;
 
