@@ -1,17 +1,7 @@
 package nl.mad.lisp;
 
 public class LispExecutor {
-
-	public void execute (Node node) {
-		Namespace global = new Namespace(null);
-		
-		while (node != null) {
-			eval(node, global);
-			node = node.next;
-		}
-	}
-
-	private Data eval (Node node, Namespace namespace) {
+	public Data eval (Node node, Namespace namespace) {
 		Data result;
 
 		switch (node.data.type) {
@@ -32,7 +22,7 @@ public class LispExecutor {
 		return result;
 	}
 
-	private Data evalList (Node node, Namespace namespace) {
+	public Data evalList (Node node, Namespace namespace) {
 		Data result = null;
 
 		if (node.data.type == Data.Type.LITERAL)
@@ -83,7 +73,7 @@ public class LispExecutor {
 			value = current;
 		}
 
-		Name n = namespace.lookup(name);
+		Name n = namespace.lookupLocal(name);
 		if (n == null) {
 			namespace.add(new Name(name, args, value));
 		} else {

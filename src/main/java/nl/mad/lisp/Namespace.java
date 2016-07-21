@@ -22,6 +22,13 @@ public class Namespace {
 	}
 
 	public Name lookup (String name) {
+		Name n = lookupLocal(name);
+		if (n == null && parent != null) return parent.lookup(name);
+
+		return n;
+	}
+
+	public Name lookupLocal (String name) {
 		Node current = names;
 
 		while (current != null) {
@@ -29,8 +36,6 @@ public class Namespace {
 			if (name.equals(n.name)) return n;
 			current = current.next;
 		}
-
-		if (parent != null) return parent.lookup(name);
 
 		return null;
 	}

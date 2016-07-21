@@ -1,2 +1,4 @@
-(define hello (who) (println (+ "Hello, " who "!")))
+(define hello (who)
+	(println (+ "Hello, " who "!"))
+)
 (hello "world")

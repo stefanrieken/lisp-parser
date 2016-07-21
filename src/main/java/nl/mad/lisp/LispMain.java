@@ -26,7 +26,7 @@ public class LispMain {
 
 		//List<Token> tokens = new LispTokenizer().tokenize(reader);
 		Node root = new LispParser().parse(reader);
-		new LispExecutor().execute(root);
+		new LispExecutor().evalList(root, null);
 
 		try {
 			reader.close();
