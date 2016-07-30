@@ -2,9 +2,16 @@ package nl.mad.lisp;
 
 import java.io.PrintStream;
 
+import nl.mad.lisp.primitives.HelloPrimitives;
+import nl.mad.lisp.primitives.OtherPrimitives;
+import nl.mad.lisp.primitives.Primitives;
+
 public class LispExecutor {
-	private PrintStream out;
-	
+	private Primitives helloPrimitives = new HelloPrimitives(this);
+	private Primitives otherPrimitives = new OtherPrimitives(this);
+
+	public PrintStream out;
+
 	public LispExecutor(PrintStream out) {
 		this.out = out;
 	}
@@ -46,90 +53,18 @@ public class LispExecutor {
 		
 		return result;
 	}
-	
+
 	private Data executeLine(Node line, Namespace namespace) {
 		Data result = null;
-		String command = (String) line.getValue();
 
-		if ("define".equals(command))
-			define(line, namespace);
-		else if ("println".equals(command))
-			println(line, namespace);
-		else if ("+".equals(command))
-			result = add(line, namespace);
-		else
-			result = call(line, namespace);
+		// trying primitives first
+		result = helloPrimitives.executeLine(line, namespace);
+		if (result == null) result = otherPrimitives.executeLine(line, namespace);
+
+		// well, then it's a user-defined function
+		if (result == null) result = call(line, namespace);
 		
 		return result;
-	}
-
-	//
-	// all primitives from here
-	//
-	
-	// (define fnark (arg1 arg2) ( ... ) ) of (define fnark "hoi")
-	private void define(Node line, Namespace namespace) {
-		Node current = line.next;
-		String name = (String) current.getValue();
-		current = current.next;
-		Node value = current;
-
-		Node args = null;
-		if (current.next != null) {
-			args = (Node) current.getValue();
-			current = current.next;
-			value = current;
-		}
-
-		Name n = namespace.lookupLocal(name);
-		if (n == null) {
-			namespace.add(new Name(name, args, value));
-		} else {
-			// override; this is where you should GC!
-			n.args = args;
-			n.value = value;
-		}
-	}
-
-	// ( print "a" "b" "c" )
-	private void println(Node line, Namespace namespace) {
-
-		Node current = line.next;
-
-		while (current != null) {
-			out.println(eval(current, namespace).value);
-			current = current.next;
-		}
-	}
-
-	// implemented only for int (and String, through concat)
-	private Data add(Node line, Namespace namespace) {
-		int value = 0;
-
-		Node current = line.next;
-
-		while (current != null) {
-			Data data = eval(current, namespace);
-			if (data.type == Data.Type.STRING) return concat(line, namespace);
-
-			value += (Integer) data.value;
-			current = current.next;
-		}
-
-		return new Data(Data.Type.INTEGER, value);
-	}
-
-	private Data concat(Node line, Namespace namespace) {
-		StringBuffer buffer = new StringBuffer();
-
-		Node current = line.next;
-
-		while (current != null) {
-			buffer.append(eval(current, namespace).value);
-			current = current.next;
-		}
-	
-		return new Data(Data.Type.STRING, buffer.toString());
 	}
 
 	// ( methodname arg1 arg2 ) => (method (arg1 arg2) ( ... ) )
@@ -145,7 +80,7 @@ public class LispExecutor {
 		Node arg = name.args;
 
 		while (param != null) {
-			subspace.add(new Name((String) arg.getValue(), null, param));
+			subspace.add(new Name((String) arg.getValue(), null, new Node(eval(param, namespace))));
 			arg = arg.next;
 			param = param.next;
 		}

@@ -10,7 +10,11 @@ import java.io.PrintStream;
 
 import org.junit.Test;
 
-public class LispMainTest {
+/**
+ * All 'hello' tests require only the 'HelloPrimitives' set.
+ * The 'OtherPrimitives' may be disabled just to prove this.
+ */
+public class HelloTest {
 
 	@Test
 	public void testHello() throws IOException {
@@ -39,7 +43,7 @@ public class LispMainTest {
 		LispMain.run(in("/hello_closures.lisp"), out(stream));
 		assertValue("Hello, who?!\nHello, me!\n", stream);
 	}
-	
+
 	private InputStream in(String file) {
 		return getClass().getResourceAsStream(file);
 	}
@@ -50,7 +54,7 @@ public class LispMainTest {
 	
 	private void assertValue(String value, ByteArrayOutputStream stream) {
 		String val = new String(stream.toByteArray());
-		System.out.println(value);
+		System.out.println(val);
 		assertEquals(value, val);
 	}
 }

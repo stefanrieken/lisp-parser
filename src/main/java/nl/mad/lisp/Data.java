@@ -7,12 +7,13 @@ public class Data {
 		LITERAL,
 		STRING,
 		INTEGER,
-		FLOAT
+		FLOAT,
+		BOOLEAN
 	};
 
-	Type type;
+	public Type type;
 	//int refcount; GC!
-	Object value;
+	public Object value;
 	
 	public Data(Type type, Object value) {
 		this.type = type;

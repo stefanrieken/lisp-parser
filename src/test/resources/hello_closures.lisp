@@ -5,10 +5,10 @@
 	(println (+ greeting who "!"))
 )
 
-; ohja comments doen het ook gewoon
+; what does 'who' resolve to in the below code block?
 
 (
-	(define resolvewho ("who?"))
+	(define resolvewho () ("who?"))
 	(hello resolvewho)
 )
 (hello resolvewho)
