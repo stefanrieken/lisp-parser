@@ -24,7 +24,7 @@ public class LispExecutor {
 				Name name = namespace.lookup((String) node.getValue());
 				if (name == null)
 					throw new RuntimeException("Name not defined in scope: " + node.getValue());
-				result = eval((Node) name.value, name.value.data.type == Data.Type.LIST ? new Namespace(name.namespace) : namespace);
+				result = eval((Node) name.value, namespace);
 				break;
 			case LIST:
 				result = evalList((Node) node.getValue(), namespace);
@@ -43,7 +43,7 @@ public class LispExecutor {
 		if (node.data.type == Data.Type.LITERAL)
 			return executeLine(node, namespace);
 
-		// we hebben te maken met scope haakjes
+		// these are purely-scope brackets
 		Namespace sub = new Namespace(namespace);
 		while (node != null) {
 			result = eval(node, sub);
