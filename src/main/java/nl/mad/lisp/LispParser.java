@@ -6,11 +6,19 @@ import java.io.PushbackReader;
 import nl.mad.lisp.readers.AtomReader;
 import nl.mad.lisp.readers.EolCommentReader;
 import nl.mad.lisp.readers.StringReader;
+import nl.mad.lisp.type.MessageMarker;
+import nl.mad.lisp.type.ListObject;
 
 /**
  * Parse directly, without tokenizing separately.
  */
 public class LispParser {
+	/** 
+	 * Extracted here because it may be subject to flavor.
+	 * For one thing, using '.' may cause confusion with cons cell syntax.
+	 */
+	public static final char MESSAGE_MARKER = '.';
+
 	private EolCommentReader comment;
 	private StringReader string;
 	private AtomReader atom;
@@ -34,12 +42,15 @@ public class LispParser {
 			char ch = (char) read;
 
 			switch (ch) {
+				case MESSAGE_MARKER:
+					node = new Node(MessageMarker.MESSAGE_MARKER);
+					break;
 				case '"':
 					node = new Node(string.read(input));
 					break;
 				case '(':
 					parens++;
-					node = new Node(new Data(Data.Type.LIST, parse(input)));
+					node = new Node(new ListObject(parse(input)));
 					break;
 				case ')':
 					if (parens == 0) throw new RuntimeException("Parse error: too many closing parentheses.");

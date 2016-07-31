@@ -2,12 +2,12 @@ package nl.mad.lisp.readers;
 
 import java.io.PushbackReader;
 
-import nl.mad.lisp.Data;
+import nl.mad.lisp.type.SelfishObject;
 
 public class EolCommentReader extends Reader {
 
 	@Override
-	public Data read(PushbackReader input) {
+	public SelfishObject read(PushbackReader input) {
 		StringBuffer result = new StringBuffer();
 
 		int read = readChar(input);

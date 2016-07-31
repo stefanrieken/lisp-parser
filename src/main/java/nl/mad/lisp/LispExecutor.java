@@ -2,51 +2,45 @@ package nl.mad.lisp;
 
 import java.io.PrintStream;
 
-import nl.mad.lisp.primitives.HelloPrimitives;
-import nl.mad.lisp.primitives.OtherPrimitives;
-import nl.mad.lisp.primitives.Primitives;
+import nl.mad.lisp.type.AtomObject;
+import nl.mad.lisp.type.ListObject;
+import nl.mad.lisp.type.MessageMarker;
+import nl.mad.lisp.type.SelfishObject;
 
 public class LispExecutor {
-	private Primitives helloPrimitives = new HelloPrimitives(this);
-	private Primitives otherPrimitives = new OtherPrimitives(this);
-
 	public PrintStream out;
 
 	public LispExecutor(PrintStream out) {
 		this.out = out;
 	}
 
-	public Data eval (Node node, Namespace namespace) {
-		Data result;
+	public SelfishObject eval (Node node, SelfishObject namespace) {
+		SelfishObject result;
 
-		switch (node.data.type) {
-			case LITERAL:
-				Name name = namespace.lookup((String) node.getValue());
-				if (name == null)
-					throw new RuntimeException("Name not defined in scope: " + node.getValue());
-				result = eval((Node) name.value, namespace);
-				break;
-			case LIST:
-				result = evalList((Node) node.getValue(), namespace);
-				break;
-			default:
-				result = node.data;
-				break;
+		if (node.data instanceof AtomObject) {
+			// single object reference; we do not yet support dot-invocation from here, so this is still simple
+			result = access(node, namespace);
+		} else if (node.data instanceof ListObject) {
+			// single invocation
+			result = evalList((Node) node.data.value, namespace);
+		} else {
+			// direct value; we don't store these separately yet
+			result = node.data;
 		}
-		
+
 		return result;
 	}
 
-	public Data evalList (Node node, Namespace namespace) {
-		Data result = null;
+	public SelfishObject evalList (Node node, SelfishObject namespace) {
+		SelfishObject result = null;
 
-		if (node.data.type == Data.Type.LITERAL)
+		if (node.data instanceof AtomObject || (node.next != null && node.next.data == MessageMarker.MESSAGE_MARKER))
 			return executeLine(node, namespace);
 
-		// these are purely-scope brackets
-		Namespace sub = new Namespace(namespace);
+		// these are purely-scope brackets. They can contain any mix of values and lists
+		SelfishObject sub = new SelfishObject(namespace, "a_namespace");
 		while (node != null) {
-			result = eval(node, sub);
+			result = eval((Node) node, sub);
 
 			node = node.next;
 		}
@@ -54,37 +48,20 @@ public class LispExecutor {
 		return result;
 	}
 
-	private Data executeLine(Node line, Namespace namespace) {
-		Data result = null;
-
-		// trying primitives first
-		result = helloPrimitives.executeLine(line, namespace);
-		if (result == null) result = otherPrimitives.executeLine(line, namespace);
-
-		// well, then it's a user-defined function
-		if (result == null) result = call(line, namespace);
-		
+	private SelfishObject access(Node line, SelfishObject namespace) {
+		SelfishObject result = namespace.access((String) line.data.value);
+		if (result == null)
+			throw new RuntimeException("Lookup failed: " + line.data.value);
 		return result;
 	}
 
-	// ( methodname arg1 arg2 ) => (method (arg1 arg2) ( ... ) )
-	private Data call(Node line, Namespace namespace) {
-		Name name = namespace.lookup((String)line.getValue());
-		
-		if (name == null) throw new RuntimeException("Name not defined in scope: " + line.getValue());
-
-		Namespace subspace = new Namespace(namespace);
-
-		Node param = (Node) line.next;
-
-		Node arg = name.args;
-
-		while (param != null) {
-			subspace.add(new Name((String) arg.getValue(), null, new Node(eval(param, namespace))));
-			arg = arg.next;
-			param = param.next;
+	private SelfishObject executeLine(Node line, SelfishObject namespace) {
+		if (line.next != null && line.next.data == MessageMarker.MESSAGE_MARKER) {
+			// remote execution
+			return line.data.execute(line.next.next, eval(line, namespace), this);
+		} else {
+			// local execution
+			return namespace.execute(line, namespace, this);
 		}
-
-		return evalList((Node) name.value, subspace);
 	}
 }

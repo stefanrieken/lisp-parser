@@ -2,7 +2,10 @@ package nl.mad.lisp.readers;
 
 import java.io.PushbackReader;
 
-import nl.mad.lisp.Data;
+import nl.mad.lisp.LispParser;
+import nl.mad.lisp.type.AtomObject;
+import nl.mad.lisp.type.IntegerObject;
+import nl.mad.lisp.type.SelfishObject;
 
 /**
  * Parse any Atom that is not a String (which is parsed separately due to having to support escaping).
@@ -19,7 +22,7 @@ import nl.mad.lisp.Data;
 public class AtomReader extends Reader {
 
 	@Override
-	public Data read(PushbackReader input) {
+	public SelfishObject read(PushbackReader input) {
 		StringBuffer result = new StringBuffer();
 
 		int read = readChar(input);
@@ -29,7 +32,7 @@ public class AtomReader extends Reader {
 
 			// Seems like we have to check for all the other tokens here.
 			// This is because the Atom syntax is not otherwise limited, e.g. by only allowing alphanumeric chars.
-			if (Character.isWhitespace(ch) || ch == '(' || ch == ')' || ch == ';') {
+			if (Character.isWhitespace(ch) || ch == '(' || ch == ')' || ch == ';' || ch == LispParser.MESSAGE_MARKER) {
 				unreadChar(input, read);
 				break;
 			}
@@ -38,19 +41,19 @@ public class AtomReader extends Reader {
 			read = readChar(input);
 		}
 		
-		return makeToken(result.toString());
+		return makeObject(result.toString());
 	}
 
-	private Data makeToken(String data) {
+	private SelfishObject makeObject(String data) {
 		// There are still no good (no-exception-throwing) methods to check for type conversion in Java. 
 		try {
-			return new Data(Data.Type.INTEGER, Integer.parseInt(data));
+			return new IntegerObject(Integer.parseInt(data));
 		} catch (NumberFormatException e) {
-			try {
-				return new Data(Data.Type.FLOAT, Float.parseFloat(data));
-			} catch (NumberFormatException f) {
-				return new Data(Data.Type.LITERAL, data);
-			}
+//			try {
+//				return new Data(Data.Type.FLOAT, Float.parseFloat(data));
+//			} catch (NumberFormatException f) {
+				return new AtomObject(data);
+//			}
 		}
 	}
 }

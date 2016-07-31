@@ -1,13 +1,21 @@
 package nl.mad.lisp;
 
+import nl.mad.lisp.type.NilObject;
+import nl.mad.lisp.type.SelfishObject;
+
 public class Node {
-	public Data data;
+	public SelfishObject data;
 	public Node next;
 	
-	public Node (Data data) {
+	public Node (SelfishObject data) {
+		this(data, null);
+	}
+
+	public Node (SelfishObject data, Node next) {
 		if (data == null)
-			data = new Data(Data.Type.NULL, null);
+			data = NilObject.NO_DATA; // feature seems to be unused?
 		this.data = data;
+		this.next = next;
 	}
 
 	public Object getValue() {

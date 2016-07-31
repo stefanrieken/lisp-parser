@@ -24,6 +24,13 @@ public class HelloTest {
 	}
 
 	@Test
+	public void testHelloFn() throws IOException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		LispMain.run(in("/hello_fn.lisp"), out(stream));
+		assertValue("Hello, world!\n", stream);
+	}
+
+	@Test
 	public void testHelloInt() throws IOException {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		LispMain.run(in("/hello_int.lisp"), out(stream));
@@ -42,6 +49,13 @@ public class HelloTest {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		LispMain.run(in("/hello_closures.lisp"), out(stream));
 		assertValue("Hello, who?!\nHello, me!\n", stream);
+	}
+
+	@Test
+	public void testHelloOo() throws IOException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		LispMain.run(in("/hello_oo.lisp"), out(stream));
+		assertValue("Hello, 42!\nHello, world!\n", stream);
 	}
 
 	private InputStream in(String file) {

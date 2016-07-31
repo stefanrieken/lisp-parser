@@ -1,14 +1,14 @@
 (define greeting "Hello, ")
-(define resolvewho ("me"))
+(define resolvewho (method () ("me")))
 
-(define hello (who)
-	(println (+ greeting who "!"))
+(define hello (method (whoclosure)
+	(println (+ greeting (whoclosure) "!")))
 )
 
 ; what does 'who' resolve to in the below code block?
 
 (
-	(define resolvewho () ("who?"))
+	(define resolvewho (method () ("who?")))
 	(hello resolvewho)
 )
-(hello resolvewho)
+(hello (method() (resolvewho)))
